@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+const base = process.env.VITE_E2E === 'true' ? '/' : '/safenestt-Ai/'
+
 export default defineConfig({
-  base: '/safenestt-Ai/',
+  base,
   plugins: [react()],
   server: {
     port: 5173,
