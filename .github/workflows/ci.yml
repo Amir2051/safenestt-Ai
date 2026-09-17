@@ -35,6 +35,16 @@ jobs:
       - run: npm run lint
       - run: npm run build
 
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate production compose configuration
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+          SESSION_SECRET: ci-only-session-secret-012345678901234567890123
+        run: docker compose config -q
+
   e2e:
     runs-on: ubuntu-latest
     needs: [backend, frontend]
