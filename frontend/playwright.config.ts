@@ -12,7 +12,7 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   webServer: {
-    command: 'sh -c "cd ../backend && python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000 & npm run dev -- --host 127.0.0.1 --port 5173"',
+    command: 'sh -c "(cd ../backend && python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000) & npm run dev -- --host 127.0.0.1 --port 5173"',
     url: 'http://127.0.0.1:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
