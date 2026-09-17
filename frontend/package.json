@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "preview": "vite preview",
-    "e2e": "playwright test"
+    "e2e": "VITE_E2E=true playwright test"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.1.1",
