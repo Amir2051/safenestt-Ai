@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: sqlite:////data/safenestt.db
+      SESSION_SECRET: ${SESSION_SECRET:-development-only-change-me}
+      SAFENESTT_AI_BASE_URL: ${SAFENESTT_AI_BASE_URL:-}
+      SAFENESTT_AI_API_KEY: ${SAFENESTT_AI_API_KEY:-}
+    volumes:
+      - safenestt-data:/data
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+volumes:
+  safenestt-data:
