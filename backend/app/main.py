@@ -8,8 +8,8 @@ from .db import Case, Evidence, Finding, Investigation, User, db_session
 from .schemas import AuthRequest, CaseCreate, CaseOut, EvidenceCreate, FindingOut
 from .investigator import run_investigation
 
-app = FastAPI(title="SafeNestT Client API", version="0.4.0")
-origins = [item.strip() for item in os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",") if item.strip()]
+app = FastAPI(title="SafeNestT Client API", version="0.5.0")
+origins = [item.strip() for item in os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:8080").split(",") if item.strip()]
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=["GET", "POST", "PATCH", "OPTIONS"], allow_headers=["Authorization", "Content-Type"])
 
 @app.get("/health")
@@ -98,3 +98,19 @@ def list_findings(case_id: int, user: User = Depends(current_user), db: Session 
     invs = list(db.scalars(select(Investigation).where(Investigation.case_id == case.id)))
     ids = [x.id for x in invs]
     return list(db.scalars(select(Finding).where(Finding.investigation_id.in_(ids)))) if ids else []
+
+@app.get("/api/cases/{case_id}/report")
+def case_report(case_id: int, user: User = Depends(current_user), db: Session = Depends(db_session)):
+    case = db.scalar(select(Case).where(Case.id == case_id, Case.user_id == user.id))
+    if not case:
+        raise HTTPException(404, "Case not found")
+    evidence = list(db.scalars(select(Evidence).where(Evidence.case_id == case.id).order_by(Evidence.created_at)))
+    investigations = list(db.scalars(select(Investigation).where(Investigation.case_id == case.id).order_by(Investigation.created_at.desc())))
+    findings = [f for inv in investigations for f in db.scalars(select(Finding).where(Finding.investigation_id == inv.id)).all()]
+    return {
+        "report_version": "1.0",
+        "case": {"id": case.id, "title": case.title, "type": case.case_type, "status": case.status, "description": case.description, "created_at": case.created_at, "updated_at": case.updated_at},
+        "evidence": [{"id": x.id, "kind": x.kind, "label": x.label, "content": x.content, "created_at": x.created_at} for x in evidence],
+        "investigations": [{"id": x.id, "status": x.status, "summary": x.summary, "created_at": x.created_at} for x in investigations],
+        "findings": [{"id": x.id, "category": x.category, "title": x.title, "detail": x.detail, "confidence": x.confidence, "source": x.source} for x in findings],
+    }
