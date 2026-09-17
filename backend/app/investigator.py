@@ -25,29 +25,34 @@ def _post(url: str, payload: dict) -> dict:
         return json.loads(response.read().decode())
 
 
+def _build_investigation_target(case: Case, evidence: list[Evidence]) -> str:
+    """Build a bounded investigation target accepted by the AI engine API."""
+    parts = [
+        f"Case type: {case.case_type}",
+        f"Reported incident:\n{case.description[:8000]}",
+    ]
+    if evidence:
+        parts.append("Evidence and user notes:")
+        for item in evidence:
+            parts.append(f"- [{item.kind}] {item.label}: {item.content[:2000]}")
+    return "\n\n".join(parts)[:16000]
+
+
 def run_investigation(case: Case, db: Session) -> dict:
     evidence=list(db.scalars(select(Evidence).where(Evidence.case_id == case.id)))
     if not AI_BASE_URL:
         return _fallback(case,evidence)
 
     tenant_id=f"user:{case.user_id}"
-    context={
-        "case_id": str(case.id),
-        "case_type": case.case_type,
-        "description": case.description,
-        "evidence": [
-            {"id": item.id, "kind": item.kind, "label": item.label, "content": item.content}
-            for item in evidence
-        ],
-    }
     try:
+        # The AI engine's public create schema accepts only target + investigation_type.
+        # Evidence is included in the bounded target package so the existing engine
+        # can process the same case context without inventing an unsupported request shape.
         created=_post(
             f"{AI_BASE_URL}/v1/investigations",
             {
-                "target":{"type":"case","value":case.description[:4000]},
+                "target":{"type":"case","value":_build_investigation_target(case,evidence)},
                 "investigation_type":case.case_type,
-                "tenant_id":tenant_id,
-                "context":context,
             },
         )
         investigation_id=created["investigation_id"]
