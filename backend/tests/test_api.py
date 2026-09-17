@@ -31,6 +31,12 @@ def test_client_case_flow():
     assert len(detail.json()["evidence"]) == 1
     assert len(detail.json()["findings"]) >= 1
 
+    report = client.get(f"/api/cases/{case_id}/report", headers=headers)
+    assert report.status_code == 200
+    assert report.json()["case"]["id"] == case_id
+    assert len(report.json()["evidence"]) == 1
+    assert len(report.json()["findings"]) >= 1
+
 
 def test_case_isolation():
     client = TestClient(app)
@@ -41,3 +47,10 @@ def test_case_isolation():
     created = client.post("/api/cases", headers=h1, json={"case_type":"Payment fraud","description":"Private case belonging to the first account."})
     case_id = created.json()["id"]
     assert client.get(f"/api/cases/{case_id}", headers=h2).status_code == 404
+    assert client.get(f"/api/cases/{case_id}/report", headers=h2).status_code == 404
+
+
+def test_protected_endpoints_require_authentication():
+    client = TestClient(app)
+    assert client.get("/api/cases").status_code == 401
+    assert client.post("/api/cases", json={"case_type":"Online scam","description":"Unauthenticated request must be rejected."}).status_code == 401
