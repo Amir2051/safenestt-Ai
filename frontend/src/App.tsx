@@ -3,7 +3,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, FileSearch, LayoutDashboard, LogOut, Plus, ShieldCheck } from 'lucide-react'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API = import.meta.env.VITE_API_URL ?? ''
 const token = () => localStorage.getItem('safenestt_token')
 async function api(path: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers); headers.set('Content-Type', 'application/json')
