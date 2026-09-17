@@ -11,18 +11,10 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? 'http://127.0.0.1:5173',
     trace: 'on-first-retry',
   },
-  webServer: [
-    {
-      command: 'python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000',
-      cwd: '../backend',
-      url: 'http://127.0.0.1:8000/health',
-      reuseExistingServer: !process.env.CI,
-    },
-    {
-      command: 'npm run dev -- --host 127.0.0.1',
-      url: 'http://127.0.0.1:5173',
-      reuseExistingServer: !process.env.CI,
-    },
-  ],
+  webServer: {
+    command: 'sh -c "cd ../backend && python3 -m uvicorn app.main:app --host 127.0.0.1 --port 8000 & cd ../frontend && npm run dev -- --host 127.0.0.1"',
+    url: 'http://127.0.0.1:5173',
+    reuseExistingServer: !process.env.CI,
+  },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 })
