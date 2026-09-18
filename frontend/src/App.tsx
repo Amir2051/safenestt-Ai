@@ -4,7 +4,7 @@ import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-rou
 import { AlertTriangle, FileSearch, LayoutDashboard, LogOut, Plus, ShieldCheck } from 'lucide-react'
 import IC3Intake from './IC3Intake'
 
-const API = import.meta.env.VITE_API_URL ?? ''
+const API = import.meta.env.VITE_API_URL ?? 'https://safenestt-api.drivenest.info'
 const token = () => localStorage.getItem('safenestt_token')
 async function api(path: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers); headers.set('Content-Type', 'application/json')
