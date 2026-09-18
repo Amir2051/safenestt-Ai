@@ -6,7 +6,7 @@ import './styles.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/safenestt-Ai">
       <App />
     </BrowserRouter>
   </React.StrictMode>,
